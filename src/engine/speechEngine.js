@@ -8,9 +8,12 @@ export class SpeechEngine {
         this.startTime = 0;
         this.wordCount = 0;
         this.transcript = "";
+        this.fillerCount = 0;
+        this.fillerWords = ["um", "uh", "like", "you know", "basically", "literally", "actually"];
         
         this.onResultCallback = null;
         this.onWpmUpdateCallback = null;
+        this.onFillerUpdateCallback = null;
         
         this.wpmInterval = null;
 
@@ -34,21 +37,36 @@ export class SpeechEngine {
             let finalTranscript = '';
 
             for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const chunk = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                    // Count words in final chunk
-                    const words = event.results[i][0].transcript.trim().split(/\s+/);
+                    finalTranscript += chunk;
+                    
+                    // Count words
+                    const words = chunk.trim().split(/\s+/);
                     this.wordCount += words.length > 0 && words[0] !== "" ? words.length : 0;
+                    
+                    // Count filler words
+                    this.fillerWords.forEach(word => {
+                        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                        const matches = chunk.match(regex);
+                        if (matches) {
+                            this.fillerCount += matches.length;
+                        }
+                    });
                 } else {
-                    interimTranscript += event.results[i][0].transcript;
+                    interimTranscript += chunk;
                 }
             }
             
             this.transcript += finalTranscript;
             
+            if (this.onFillerUpdateCallback && finalTranscript.length > 0) {
+                this.onFillerUpdateCallback(this.fillerCount);
+            }
+            
             if (this.onResultCallback) {
-                // Pass the full accumulated history plus whatever is currently being spoken
-                this.onResultCallback(this.transcript + interimTranscript);
+                const fullText = this.transcript + interimTranscript;
+                this.onResultCallback(this.formatTranscript(fullText));
             }
         };
 
@@ -70,6 +88,7 @@ export class SpeechEngine {
         this.isRecording = true;
         this.startTime = Date.now();
         this.wordCount = 0;
+        this.fillerCount = 0;
         this.transcript = "";
         
         try {
@@ -114,5 +133,18 @@ export class SpeechEngine {
 
     onWpmUpdate(callback) {
         this.onWpmUpdateCallback = callback;
+    }
+    
+    onFillerUpdate(callback) {
+        this.onFillerUpdateCallback = callback;
+    }
+
+    formatTranscript(text) {
+        let formatted = text;
+        this.fillerWords.forEach(word => {
+            const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+            formatted = formatted.replace(regex, '<span class="filler-highlight">$1</span>');
+        });
+        return formatted;
     }
 }

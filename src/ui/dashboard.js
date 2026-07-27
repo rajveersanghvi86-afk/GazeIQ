@@ -16,6 +16,10 @@ export class Dashboard {
         this.wpmVal = document.getElementById('wpm_val');
         this.transcriptBox = document.getElementById('live_transcript');
         
+        this.volumeFill = document.getElementById('volume_fill');
+        this.fillerVal = document.getElementById('filler_val');
+        this.postureFill = document.getElementById('posture_fill');
+        
         this.onStartCallback = null;
         this.onStopCallback = null;
 
@@ -62,6 +66,27 @@ export class Dashboard {
         const smilePercent = Math.round(metrics.smileRatio);
         this.smileFill.style.width = `${smilePercent}%`;
         this.smileVal.textContent = `${smilePercent}%`;
+        
+        // Posture Stability
+        if (metrics.postureStability !== undefined) {
+            const stabPercent = Math.round(metrics.postureStability);
+            this.postureFill.style.width = `${stabPercent}%`;
+            if (stabPercent > 70) this.postureFill.style.background = '#4ade80';
+            else if (stabPercent > 40) this.postureFill.style.background = '#facc15';
+            else this.postureFill.style.background = '#ef4444';
+        }
+    }
+    
+    updateVolume(volumeScore) {
+        this.volumeFill.style.width = `${Math.round(volumeScore)}%`;
+        if (volumeScore > 85) this.volumeFill.style.background = '#ef4444'; // Too loud
+        else if (volumeScore < 10) this.volumeFill.style.background = '#64748b'; // Too quiet
+        else this.volumeFill.style.background = '#a855f7'; // Good
+    }
+    
+    updateFillers(count) {
+        this.fillerVal.textContent = count;
+        if (count > 5) this.fillerVal.style.color = '#ef4444';
     }
 
     updateWpm(wpm) {

@@ -15,6 +15,7 @@ export class GazeEngine {
         this.expressionEngine = new ExpressionEngine();
         
         this.isRunning = false;
+        this.noseHistory = [];
     }
 
     async init() {
@@ -79,11 +80,15 @@ export class GazeEngine {
             // Calculate Expressions
             const expressions = this.expressionEngine.analyze(landmarks);
             
+            // Calculate Posture Stability (Head Jitter)
+            const stabilityScore = this.calculateStability(landmarks[1]);
+            
             if (this.onMetricsUpdate) {
                 this.onMetricsUpdate({
                     eyeContact: eyeContactScore,
                     smileRatio: expressions.smileRatio,
-                    browTension: expressions.browTension
+                    browTension: expressions.browTension,
+                    postureStability: stabilityScore
                 });
             }
         } else {
@@ -150,5 +155,35 @@ export class GazeEngine {
         // Final score combines both
         const finalScore = Math.min(100, Math.max(0, (yawScore + pitchScore) / 2));
         return finalScore;
+    }
+
+    calculateStability(noseTip) {
+        if (!noseTip) return 100;
+        
+        this.noseHistory.push({ x: noseTip.x, y: noseTip.y, t: Date.now() });
+        
+        // Keep last 30 frames (roughly 1 second)
+        if (this.noseHistory.length > 30) {
+            this.noseHistory.shift();
+        }
+        
+        if (this.noseHistory.length < 10) return 100; // Not enough data
+        
+        // Calculate standard deviation of position (jitter)
+        let sumX = 0, sumY = 0;
+        this.noseHistory.forEach(p => { sumX += p.x; sumY += p.y; });
+        const avgX = sumX / this.noseHistory.length;
+        const avgY = sumY / this.noseHistory.length;
+        
+        let variance = 0;
+        this.noseHistory.forEach(p => {
+            variance += Math.pow(p.x - avgX, 2) + Math.pow(p.y - avgY, 2);
+        });
+        
+        // High variance = high jitter = low stability
+        // Typical variance for a still head over 1 second is very small (<0.0001)
+        // If variance goes above 0.002, they are moving a lot.
+        const stability = Math.max(0, 100 - (variance * 50000));
+        return Math.min(100, stability);
     }
 }

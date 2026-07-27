@@ -8,8 +8,12 @@ export class ReportView {
         
         this.valEye = document.getElementById('report_eye');
         this.valWpm = document.getElementById('report_wpm');
+        this.valFillers = document.getElementById('report_fillers');
+        this.valStability = document.getElementById('report_stability');
+        
         this.insightList = document.getElementById('insight_list');
         this.btnNew = document.getElementById('btn_new_session');
+        this.btnDownload = document.getElementById('btn_download_video');
         
         this.chartCanvas = document.getElementById('timeline_chart');
         this.chart = null;
@@ -18,6 +22,7 @@ export class ReportView {
 
         this.btnNew.addEventListener('click', () => {
             this.hide();
+            this.btnDownload.classList.add('hidden');
             if (this.onNewSessionCallback) this.onNewSessionCallback();
         });
     }
@@ -34,10 +39,22 @@ export class ReportView {
     }
 
     render(sessionData) {
-        const { avgEyeContact, avgWpm, timeline, avgSmile } = sessionData;
+        const { avgEyeContact, avgWpm, timeline, avgSmile, totalFillers, avgStability, videoUrl } = sessionData;
         
         this.valEye.textContent = `${Math.round(avgEyeContact)}%`;
         this.valWpm.innerHTML = `${Math.round(avgWpm)} <small>WPM</small>`;
+        this.valFillers.textContent = totalFillers || 0;
+        this.valStability.textContent = `${Math.round(avgStability || 100)}%`;
+        
+        if (videoUrl) {
+            this.btnDownload.classList.remove('hidden');
+            this.btnDownload.onclick = () => {
+                const a = document.createElement('a');
+                a.href = videoUrl;
+                a.download = `GazeIQ_Pitch_${new Date().getTime()}.webm`;
+                a.click();
+            };
+        }
         
         this.generateInsights(sessionData);
         this.renderChart(timeline);
@@ -48,21 +65,25 @@ export class ReportView {
         const insights = [];
 
         if (data.avgEyeContact < 70) {
-            insights.push("Your eye contact was quite low. Try to look directly into the camera lens more often to engage your virtual audience.");
+            insights.push("Your eye contact was quite low. Try to look directly into the camera lens more often.");
         } else {
             insights.push("Great job maintaining eye contact with the lens!");
         }
 
         if (data.avgWpm > 160) {
-            insights.push("Your speaking pace was very fast. Try to slow down and use pauses to emphasize key points.");
+            insights.push("Your speaking pace was very fast. Try to slow down and use pauses.");
         } else if (data.avgWpm < 110) {
             insights.push("Your pace was a bit slow. A conversational pace is typically 120-150 WPM.");
         } else {
             insights.push("Your speaking pace was in the ideal conversational range.");
         }
         
-        if (data.avgSmile > 30) {
-            insights.push("You maintained a positive expression (good smile ratio) throughout the pitch.");
+        if (data.totalFillers > 5) {
+            insights.push(`You used ${data.totalFillers} filler words. Try replacing them with short pauses.`);
+        }
+        
+        if (data.avgStability && data.avgStability < 60) {
+            insights.push("You displayed high head jitter (swaying/bobbing). Try planting your feet and grounding your posture.");
         }
 
         insights.forEach(text => {

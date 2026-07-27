@@ -252,6 +252,7 @@ h2 {
 .summary-stats {
     display: flex;
     gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .stat-card {
@@ -295,6 +296,14 @@ h2 {
 /* Utilities */
 .hidden {
     display: none !important;
+}
+
+.filler-highlight {
+    background-color: rgba(250, 204, 21, 0.2);
+    color: #fde047;
+    padding: 0 4px;
+    border-radius: 4px;
+    font-weight: 600;
 }
 
 @media (max-width: 900px) {
