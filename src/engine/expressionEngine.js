@@ -23,17 +23,18 @@ export class ExpressionEngine {
         const topLip = landmarks[13];
         const bottomLip = landmarks[14];
 
-        // Basic smile calculation (distance between corners vs distance between lips)
-        const mouthWidth = this.distance(leftMouth, rightMouth);
-        const mouthHeight = this.distance(topLip, bottomLip);
+        const leftEye = landmarks[33];
+        const rightEye = landmarks[263];
         
-        // A simple ratio heuristic
+        // Basic smile calculation: mouth width relative to distance between eyes
+        const mouthWidth = this.distance(leftMouth, rightMouth);
+        const eyeDist = this.distance(leftEye, rightEye);
+        
         let smileScore = 0;
-        if (mouthWidth > 0 && mouthHeight >= 0) {
-            // Adjust threshold based on typical neutral face
-            const ratio = mouthWidth / (mouthHeight + 0.001);
-            // Roughly, ratio > 3.0 might be a smile. Map to 0-100%
-            smileScore = Math.min(100, Math.max(0, (ratio - 2.5) * 20));
+        if (eyeDist > 0) {
+            const mouthRatio = mouthWidth / eyeDist;
+            // Typical neutral ratio is around 0.6. A smile stretches it above 0.7
+            smileScore = Math.min(100, Math.max(0, (mouthRatio - 0.65) * 300));
         }
 
         // Brow tension

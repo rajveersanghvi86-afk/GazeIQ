@@ -137,15 +137,15 @@ export class GazeEngine {
         const faceCenter = (leftEar.x + rightEar.x) / 2;
         const yawOffset = Math.abs(noseTip.x - faceCenter);
         
-        // Normalize yaw
-        // If yawOffset is small, face is looking forward.
-        const yawScore = Math.max(0, 100 - (yawOffset * 500)); 
+        // Normalize yaw: If yawOffset is small (<0.06), face is looking forward.
+        const yawScore = yawOffset < 0.06 ? 100 : Math.max(0, 100 - ((yawOffset - 0.06) * 1500)); 
         
         // Calculate pitch (vertical turn) based on nose tip vs eye level
         const eyeLevel = (landmarks[33].y + landmarks[263].y) / 2;
         const pitchOffset = Math.abs(noseTip.y - eyeLevel);
-        // Simple bounding - if nose is too high or too low relative to eyes
-        const pitchScore = pitchOffset > 0.1 && pitchOffset < 0.25 ? 100 : Math.max(0, 100 - Math.abs(pitchOffset - 0.15) * 1000);
+        
+        // Normal pitchOffset is around 0.15 - 0.25 when looking at the camera
+        const pitchScore = (pitchOffset > 0.1 && pitchOffset < 0.3) ? 100 : Math.max(0, 100 - Math.abs(pitchOffset - 0.2) * 1000);
         
         // Final score combines both
         const finalScore = Math.min(100, Math.max(0, (yawScore + pitchScore) / 2));
