@@ -68,6 +68,11 @@ export class GazeEngine {
         this.canvasCtx.save();
         this.canvasCtx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
         
+        // Draw the video frame to the canvas FIRST, so it is visible in the video download
+        if (results.image) {
+            this.canvasCtx.drawImage(results.image, 0, 0, this.canvasElement.width, this.canvasElement.height);
+        }
+        
         if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
             const landmarks = results.multiFaceLandmarks[0];
             
@@ -160,7 +165,10 @@ export class GazeEngine {
     calculateStability(noseTip) {
         if (!noseTip) return 100;
         
-        this.noseHistory.push({ x: noseTip.x, y: noseTip.y, t: Date.now() });
+        // Convert normalized coordinates to absolute pixels for more reliable variance
+        const w = this.canvasElement.width || 640;
+        const h = this.canvasElement.height || 480;
+        this.noseHistory.push({ x: noseTip.x * w, y: noseTip.y * h, t: Date.now() });
         
         // Keep last 30 frames (roughly 1 second)
         if (this.noseHistory.length > 30) {
@@ -180,10 +188,11 @@ export class GazeEngine {
             variance += Math.pow(p.x - avgX, 2) + Math.pow(p.y - avgY, 2);
         });
         
-        // High variance = high jitter = low stability
-        // Typical variance for a still head over 1 second is very small (<0.0001)
-        // If variance goes above 0.002, they are moving a lot.
-        const stability = Math.max(0, 100 - (variance * 50000));
+        const meanVariance = variance / this.noseHistory.length;
+        
+        // Typical pixel variance for a still head is < 10.
+        // Moderate swaying is 50-100. High swaying > 200.
+        const stability = Math.max(0, 100 - (meanVariance * 0.5));
         return Math.min(100, stability);
     }
 }

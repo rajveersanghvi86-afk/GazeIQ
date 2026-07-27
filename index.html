@@ -36,41 +36,44 @@
                 </div>
             </div>
 
-            <!-- Dashboard / Live Feedback UI -->
-            <aside class="dashboard glass-panel" id="dashboard_view">
+            <!-- Dashboard Side Panel -->
+            <aside class="dashboard-sidebar glass-panel" id="dashboard_view">
                 <h2>Live Feedback</h2>
-                <div class="metric">
-                    <span class="metric-label">Eye Contact (Lens)</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="eye_contact_fill" style="width: 0%; background: #4ade80;"></div>
+                
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="metric-label">Eye Contact (Lens)</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="eye_fill" style="width: 0%; background: #ef4444;"></div>
+                        </div>
+                        <span class="metric-value" id="eye_val">0%</span>
                     </div>
-                    <span class="metric-value" id="eye_contact_val">0%</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Smile Ratio</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="smile_fill" style="width: 0%; background: #60a5fa;"></div>
+                    <div class="metric">
+                        <span class="metric-label">Positive Expression</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="smile_fill" style="width: 0%; background: #4ade80;"></div>
+                        </div>
+                        <span class="metric-value" id="smile_val">0%</span>
                     </div>
-                    <span class="metric-value" id="smile_val">0%</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Speech Pace (WPM)</span>
-                    <span class="metric-value highlight" id="wpm_val">0</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Vocal Volume</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="volume_fill" style="width: 0%; background: #a855f7;"></div>
+                    <div class="metric">
+                        <span class="metric-label">Speech Pace (WPM)</span>
+                        <span class="metric-value highlight" id="wpm_val">0</span>
                     </div>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Filler Words</span>
-                    <span class="metric-value" id="filler_val" style="color: #facc15;">0</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Posture Stability</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="posture_fill" style="width: 100%; background: #4ade80;"></div>
+                    <div class="metric">
+                        <span class="metric-label">Vocal Volume</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="volume_fill" style="width: 0%; background: #a855f7;"></div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Filler Words</span>
+                        <span class="metric-value" id="filler_val" style="color: #facc15;">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Posture Stability</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="posture_fill" style="width: 100%; background: #4ade80;"></div>
+                        </div>
                     </div>
                 </div>
                 
