@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GazeIQ - Micro-Expression & Public Speaking Coach</title>
+    <meta name="description" content="AI-powered public speaking coach for analyzing eye contact, micro-expressions, and speech pace.">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- MediaPipe dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    
+    <!-- Chart.js for reporting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-panel">
+            <h1 class="logo">Gaze<span>IQ</span></h1>
+            <p class="subtitle">Micro-Expression & Public Speaking Coach</p>
+        </header>
+
+        <!-- Main Workspace -->
+        <main>
+            <!-- Video & Canvas Overlay -->
+            <div class="video-container glass-panel">
+                <video id="input_video" autoplay playsinline></video>
+                <canvas id="output_canvas"></canvas>
+                <div class="status-overlay" id="status_overlay">
+                    <span>Camera starting...</span>
+                </div>
+            </div>
+
+            <!-- Dashboard / Live Feedback UI -->
+            <aside class="dashboard glass-panel" id="dashboard_view">
+                <h2>Live Feedback</h2>
+                <div class="metric">
+                    <span class="metric-label">Eye Contact (Lens)</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="eye_contact_fill" style="width: 0%; background: #4ade80;"></div>
+                    </div>
+                    <span class="metric-value" id="eye_contact_val">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Smile Ratio</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="smile_fill" style="width: 0%; background: #60a5fa;"></div>
+                    </div>
+                    <span class="metric-value" id="smile_val">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Speech Pace (WPM)</span>
+                    <span class="metric-value highlight" id="wpm_val">0</span>
+                </div>
+                
+                <div class="transcript-box">
+                    <h3>Live Transcript</h3>
+                    <p id="live_transcript" class="transcript-text">Waiting for speech...</p>
+                </div>
+
+                <div class="controls">
+                    <button id="btn_start_recording" class="btn primary">Start Pitch</button>
+                    <button id="btn_stop_recording" class="btn danger hidden">Stop & Analyze</button>
+                </div>
+            </aside>
+
+            <!-- Report View (Hidden by default) -->
+            <aside class="report-view glass-panel hidden" id="report_view">
+                <h2>Session Scorecard</h2>
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <h4>Avg Eye Contact</h4>
+                        <span class="stat-large" id="report_eye">0%</span>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Avg Speech Pace</h4>
+                        <span class="stat-large" id="report_wpm">0 <small>WPM</small></span>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="timeline_chart"></canvas>
+                </div>
+                
+                <div class="insights">
+                    <h3>AI Insights</h3>
+                    <ul id="insight_list">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+                
+                <button id="btn_new_session" class="btn secondary">New Session</button>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Application Entry Point -->
+    <script type="module" src="src/app.js"></script>
+</body>
+</html>
