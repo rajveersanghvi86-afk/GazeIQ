@@ -47,7 +47,8 @@ export class SpeechEngine {
             this.transcript += finalTranscript;
             
             if (this.onResultCallback) {
-                this.onResultCallback(finalTranscript || interimTranscript);
+                // Pass the full accumulated history plus whatever is currently being spoken
+                this.onResultCallback(this.transcript + interimTranscript);
             }
         };
 
