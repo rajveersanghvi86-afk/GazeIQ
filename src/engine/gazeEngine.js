@@ -61,9 +61,11 @@ export class GazeEngine {
     }
 
     onResults(results) {
-        // Match canvas to video size
-        this.canvasElement.width = this.videoElement.videoWidth;
-        this.canvasElement.height = this.videoElement.videoHeight;
+        // Only resize canvas if dimensions change to avoid freezing/clearing context
+        if (this.canvasElement.width !== this.videoElement.videoWidth || this.canvasElement.height !== this.videoElement.videoHeight) {
+            this.canvasElement.width = this.videoElement.videoWidth;
+            this.canvasElement.height = this.videoElement.videoHeight;
+        }
         
         this.canvasCtx.save();
         this.canvasCtx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
