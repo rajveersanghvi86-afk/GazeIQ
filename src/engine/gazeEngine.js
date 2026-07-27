@@ -61,6 +61,10 @@ export class GazeEngine {
     }
 
     onResults(results) {
+        if (!this.videoElement.videoWidth || this.videoElement.videoWidth === 0) {
+            return; // Skip frame if video metadata isn't fully loaded yet
+        }
+
         // Only resize canvas if dimensions change to avoid freezing/clearing context
         if (this.canvasElement.width !== this.videoElement.videoWidth || this.canvasElement.height !== this.videoElement.videoHeight) {
             this.canvasElement.width = this.videoElement.videoWidth;

@@ -52,6 +52,26 @@ class App {
         });
 
         try {
+            // Initialize SpeechEngine FIRST to ensure Web Speech API claims the mic before getUserMedia locks it
+            this.speechEngine = new SpeechEngine();
+            this.speechEngine.onResult((text) => {
+                if (this.isRecording) {
+                    this.dashboard.updateTranscript(text);
+                }
+            });
+            this.speechEngine.onWpmUpdate((wpm) => {
+                this.currentWpm = wpm;
+                if (this.isRecording) {
+                    this.dashboard.updateWpm(wpm);
+                }
+            });
+            this.speechEngine.onFillerUpdate((count) => {
+                this.totalFillers = count;
+                if (this.isRecording) {
+                    this.dashboard.updateFillers(count);
+                }
+            });
+
             // Get microphone access independently of MediaPipe's video
             const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
             
@@ -86,25 +106,6 @@ class App {
                 }
             });
             await this.gazeEngine.init();
-            
-            this.speechEngine = new SpeechEngine();
-            this.speechEngine.onResult((text) => {
-                if (this.isRecording) {
-                    this.dashboard.updateTranscript(text);
-                }
-            });
-            this.speechEngine.onWpmUpdate((wpm) => {
-                this.currentWpm = wpm;
-                if (this.isRecording) {
-                    this.dashboard.updateWpm(wpm);
-                }
-            });
-            this.speechEngine.onFillerUpdate((count) => {
-                this.totalFillers = count;
-                if (this.isRecording) {
-                    this.dashboard.updateFillers(count);
-                }
-            });
             
             // Start camera silently in background to warm up FaceMesh
             this.gazeEngine.start();
