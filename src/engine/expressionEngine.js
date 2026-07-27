@@ -41,12 +41,12 @@ export class ExpressionEngine {
         // Inner left brow: 55, Inner right brow: 285
         // Eye centers roughly: left 159, right 386
         const leftBrow = landmarks[55];
-        const leftEye = landmarks[159];
+        const leftEyeCenter = landmarks[159];
         const rightBrow = landmarks[285];
-        const rightEye = landmarks[386];
+        const rightEyeCenter = landmarks[386];
 
-        const leftBrowDist = this.distance(leftBrow, leftEye);
-        const rightBrowDist = this.distance(rightBrow, rightEye);
+        const leftBrowDist = this.distance(leftBrow, leftEyeCenter);
+        const rightBrowDist = this.distance(rightBrow, rightEyeCenter);
         const avgBrowDist = (leftBrowDist + rightBrowDist) / 2;
 
         // Smaller distance = higher tension (frowning/squinting)
