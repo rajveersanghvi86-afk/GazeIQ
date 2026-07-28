@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GazeIQ - Micro-Expression & Public Speaking Coach</title>
-    <meta name="description" content="AI-powered public speaking coach for analyzing eye contact, micro-expressions, and speech pace.">
+    <title>GazeIQ - Micro-Expression &amp; Public Speaking Coach</title>
+    <meta name="description" content="AI-powered public speaking coach that analyzes eye contact, micro-expressions, vocal energy, and speech fluency in real time.">
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    
+
     <!-- MediaPipe dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-    
+
     <!-- Chart.js for reporting -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
 </head>
@@ -22,12 +22,15 @@
         <!-- Header -->
         <header class="glass-panel">
             <h1 class="logo">Gaze<span>IQ</span></h1>
-            <p class="subtitle">Micro-Expression & Public Speaking Coach</p>
+            <p class="subtitle">Micro-Expression &amp; Public Speaking Coach</p>
+            <div class="rec-indicator hidden" id="rec_indicator">
+                <span class="rec-dot"></span> REC
+            </div>
         </header>
 
         <!-- Main Workspace -->
         <main>
-            <!-- Video & Canvas Overlay -->
+            <!-- Video &amp; Canvas Overlay -->
             <div class="video-container glass-panel">
                 <video id="input_video" autoplay playsinline></video>
                 <canvas id="output_canvas"></canvas>
@@ -39,7 +42,7 @@
             <!-- Dashboard Side Panel -->
             <aside class="dashboard-sidebar glass-panel" id="dashboard_view">
                 <h2>Live Feedback</h2>
-                
+
                 <div class="metrics-grid">
                     <div class="metric">
                         <span class="metric-label">Eye Contact (Lens)</span>
@@ -60,31 +63,34 @@
                         <span class="metric-value highlight" id="wpm_val">0</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Vocal Volume</span>
+                        <span class="metric-label">Filler Words</span>
+                        <span class="metric-value filler-count" id="filler_val">0</span>
+                    </div>
+                    <div class="metric full-width">
+                        <span class="metric-label">Vocal Volume &amp; Energy</span>
+                        <!-- Simple progress bar (driven by updateVolume) -->
                         <div class="progress-bar">
                             <div class="progress-fill" id="volume_fill" style="width: 0%; background: #a855f7;"></div>
                         </div>
+                        <!-- Canvas frequency visualizer (driven by AudioEngine) -->
+                        <canvas id="audio_visualizer" class="audio-visualizer"></canvas>
                     </div>
-                    <div class="metric">
-                        <span class="metric-label">Filler Words</span>
-                        <span class="metric-value" id="filler_val" style="color: #facc15;">0</span>
-                    </div>
-                    <div class="metric">
+                    <div class="metric full-width">
                         <span class="metric-label">Posture Stability</span>
                         <div class="progress-bar">
                             <div class="progress-fill" id="posture_fill" style="width: 100%; background: #4ade80;"></div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="transcript-box">
-                    <h3>Live Transcript</h3>
+                    <h3>Live Transcript <span class="transcript-note">(filler words highlighted)</span></h3>
                     <p id="live_transcript" class="transcript-text">Waiting for speech...</p>
                 </div>
 
                 <div class="controls">
-                    <button id="btn_start_recording" class="btn primary">Start Pitch</button>
-                    <button id="btn_stop_recording" class="btn danger hidden">Stop & Analyze</button>
+                    <button id="btn_start_recording" class="btn primary">▶ Start Pitch</button>
+                    <button id="btn_stop_recording" class="btn danger hidden">⏹ Stop &amp; Analyze</button>
                 </div>
             </aside>
 
@@ -107,25 +113,35 @@
                         <span class="stat-large" id="report_fillers" style="color: #facc15;">0</span>
                     </div>
                     <div class="stat-card">
-                        <h4>Avg Stability</h4>
+                        <h4>Posture Stability</h4>
                         <span class="stat-large" id="report_stability">0%</span>
                     </div>
                 </div>
-                
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <h4>Avg Vocal Volume</h4>
+                        <span class="stat-large" id="report_volume" style="color: #a855f7;">0%</span>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Overall Score</h4>
+                        <span class="stat-large" id="report_overall" style="color: #22d3ee;">—</span>
+                    </div>
+                </div>
+
                 <div class="chart-container">
                     <canvas id="timeline_chart"></canvas>
                 </div>
-                
+
                 <div class="insights">
                     <h3>AI Insights</h3>
                     <ul id="insight_list">
                         <!-- Populated dynamically -->
                     </ul>
                 </div>
-                
+
                 <div class="controls" style="margin-top: 1rem;">
-                    <button id="btn_download_video" class="btn primary hidden">Download Video</button>
-                    <button id="btn_new_session" class="btn secondary">New Session</button>
+                    <button id="btn_download_video" class="btn primary hidden">⬇ Download Recording</button>
+                    <button id="btn_new_session" class="btn secondary">↺ New Session</button>
                 </div>
             </aside>
         </main>

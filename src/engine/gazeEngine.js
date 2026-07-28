@@ -19,32 +19,61 @@ export class GazeEngine {
     }
 
     async init() {
-        // Assume FaceMesh and Camera from CDN are available globally
-        if (!window.FaceMesh || !window.Camera) {
-            throw new Error("MediaPipe libraries not loaded.");
-        }
+        // Wait up to 30s for MediaPipe CDN globals to be available
+        await this._waitForMediaPipe(30000);
 
-        this.faceMesh = new window.FaceMesh({locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-        }});
+        this.faceMesh = new window.FaceMesh({
+            locateFile: (file) =>
+                `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
 
         this.faceMesh.setOptions({
             maxNumFaces: 1,
-            refineLandmarks: true, // Needed for irises
+            refineLandmarks: false, // false = smaller WASM, faster first load; irises estimated via eye corners
             minDetectionConfidence: 0.5,
             minTrackingConfidence: 0.5
         });
 
         this.faceMesh.onResults(this.onResults.bind(this));
 
+        this._sending = false; // Guard against stacked async calls
+
         this.camera = new window.Camera(this.videoElement, {
             onFrame: async () => {
-                if (this.isRunning) {
-                    await this.faceMesh.send({image: this.videoElement});
+                // Skip frame if previous send hasn't finished — prevents hang
+                if (this.isRunning && !this._sending) {
+                    this._sending = true;
+                    try {
+                        await this.faceMesh.send({ image: this.videoElement });
+                    } catch (err) {
+                        console.warn('FaceMesh send error:', err);
+                    } finally {
+                        this._sending = false;
+                    }
                 }
             },
             width: 640,
             height: 480
+        });
+    }
+
+    /**
+     * Polls until window.FaceMesh and window.Camera are defined,
+     * or rejects after timeoutMs.
+     */
+    _waitForMediaPipe(timeoutMs = 30000) {
+        return new Promise((resolve, reject) => {
+            if (window.FaceMesh && window.Camera) { resolve(); return; }
+            const start = Date.now();
+            const interval = setInterval(() => {
+                if (window.FaceMesh && window.Camera) {
+                    clearInterval(interval);
+                    resolve();
+                } else if (Date.now() - start > timeoutMs) {
+                    clearInterval(interval);
+                    reject(new Error('MediaPipe CDN scripts failed to load. Check your network connection.'));
+                }
+            }, 200);
         });
     }
 
