@@ -32,10 +32,11 @@ class App {
         this.totalFillers   = 0;
 
         // Set up lazily on first session start
-        this.audioStream   = null;
-        this.mediaRecorder = null;
-        this.recordedChunks = [];
-        this.videoUrl      = null;
+        this.audioStream     = null;
+        this.mediaRecorder   = null;
+        this.recordedChunks  = [];
+        this.videoUrl        = null;
+        this.recordingStartMs = 0;    // for fix-webm-duration
     }
 
     _setStatus(msg, isError = false) {
@@ -70,6 +71,7 @@ class App {
             this.recordedChunks  = [];
             this.audioStream     = null;
             this.mediaRecorder   = null;
+            if (this.gazeEngine) this.gazeEngine.resetCalibration();
         });
 
         // Step 1: Init speech engine (no permissions needed)
@@ -142,9 +144,20 @@ class App {
             if (e.data.size > 0) this.recordedChunks.push(e.data);
         };
         this.mediaRecorder.onstop = () => {
-            const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
-            this.videoUrl = URL.createObjectURL(blob);
-            this.showReport();
+            const duration = Date.now() - this.recordingStartMs;
+            const rawBlob  = new Blob(this.recordedChunks, { type: 'video/webm' });
+
+            // Inject duration metadata so the video timeline is seekable
+            if (typeof window.ysFixWebmDuration === 'function') {
+                window.ysFixWebmDuration(rawBlob, duration, (fixedBlob) => {
+                    this.videoUrl = URL.createObjectURL(fixedBlob);
+                    this.showReport();
+                });
+            } else {
+                // Fallback: no duration fix (timeline may be grey)
+                this.videoUrl = URL.createObjectURL(rawBlob);
+                this.showReport();
+            }
         };
     }
 
@@ -170,6 +183,7 @@ class App {
         this.recordedChunks  = [];
 
         this.recIndicator.classList.remove('hidden');
+        this.recordingStartMs = Date.now();
 
         this.speechEngine.start();
         this.audioEngine.start();
